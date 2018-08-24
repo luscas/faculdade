@@ -1,6 +1,9 @@
 from random import randint
 
 class Jogo:
+    # Multiplayer
+    players   = []   # Players
+    modo      = 1    # Solo ou Multiplayer
     nome      = None # Nome da pessoa
     chute     = 0    # Chute
     nivel     = 0    # Nivel escolhido
@@ -9,6 +12,23 @@ class Jogo:
     pontuacao = 100  # Pontuação
     posicao   = 0    # Posicao no ranking
     tentivas  = 0    # Total de tentativas por nivel
+
+    def __init__(self):
+        pass
+        '''# Suporta -> Multiplayer
+        self.modo = int(input('(1) Solo\n(2) Multiplayer\n'))
+
+        if self.modo == 1:
+            solo = input('Digite seu nome: ')
+
+            self.players.append(solo)
+        else:
+            solo = input('Digite seu nome #1: ')
+            duo  = input('Digite seu nome #2: ')
+
+            self.players.append([solo, duo])
+
+        print(self.players)'''
 
     # Começo
     def init(self):
@@ -22,14 +42,18 @@ class Jogo:
             print('* Recorde de pontos atual: %s pontos *' % recordista[0][2])
 
         print('***************************************')
-
         self.nome = input('Qual é o seu nome?\n')
-        self.nivel = int(input("Qual seu nível de dificuldade? \n(1) Fácil (2) Médio (3) Difícil \nInforme o nîvel\n"))
+        self.nivel = int(input('''
+Qual seu nível de dificuldade?
+(1) Fácil
+(2) Médio
+(3) Difícil
+Informe o nîvel: '''))
 
         self.filtro_nivel()
 
         self.numero = randint(1,100)
-        self.chute  = int(input('Qual é o seu chute? %s \n' % self.numero))
+        self.chute  = int(input('Qual é o seu chute? (%s): ' % self.numero))
 
     # Recordistas
     # @return 0 -> posicao
@@ -97,7 +121,7 @@ while True:
         if jogo.chute >= 0:
             # Se eu acertei o numero secreto -> Mensagem dizendo que eu acertei ne papai
             if jogo.chute == jogo.numero:
-                print('%s seu chute foi %s' % (jogo.nome, jogo.chute)) # Mensagem
+                #print('%s seu chute foi %s' % (jogo.nome, jogo.chute)) # Mensagem
 
                 acerto = (jogo.tentativas - jogo.tentativa)
 
@@ -108,18 +132,19 @@ while True:
                 # Mostra que o usuario é um recordista
                 recordistas = jogo.verifica_recordistas()
                 # Existe algum recordista?
-                if recordistas:
-                    if recordistas[1] == jogo.nome:
-                        print('Você é o novo recordista de pontos com %s pontos.' % (recordistas[2]))
-                    else:
-                        for x in range(len(recordistas)):
-                            if recordistas[x][1] == jogo.nome:
-                                print('Sua pontuação foi %d ficando abaixo do recorde atual que é de %d pontos' % (recordistas[x][2], recordistas[0][2]))
+                if recordistas and recordistas[0][1] == jogo.nome:
+                    print('Você é o novo recordista de pontos com %s pontos.' % (recordistas[0][2]))
+                else:
+                    for x in range(len(recordistas)):
+                        if recordistas[x][1] == jogo.nome:
+                            print('Sua pontuação foi %d ficando abaixo do recorde atual que é de %d pontos' % (recordistas[x][2], recordistas[0][2]))
 
                 # Mensagem final do jogo -> Sair ou Jogar novamente
-                print("***********************************************************")
-                opcao = int(input("0 - Sair \n1 - Jogar novamente\n"))
-                print("***********************************************************")
+                opcao = int(input('''************************************************
+(0) - Sair
+(1) - Jogar novamente
+************************************************
+'''))
 
                 # Jogar novamente
                 if opcao == 1:
@@ -134,10 +159,10 @@ while True:
 
                 jogo.retira_tentativa()
 
-                print('%s você errou!, seu chute foi maior que o número secreto' % jogo.nome)
+                print('** %s você errou!, seu chute foi maior que o número secreto **' % jogo.nome)
 
-                print('Tentativa %s' % jogo.tentativa)
-                jogo.chute = int(input('Qual é o seu chute? %s \n' % jogo.numero))
+                print('# Tentativa: %s' % jogo.tentativa)
+                jogo.chute = int(input('Qual é o seu chute? (%s): ' % jogo.numero))
 
             # Se o chute que eu dei for menor que o numero secreto -> mensagem
             elif jogo.chute < jogo.numero:
