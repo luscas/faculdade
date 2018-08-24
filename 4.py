@@ -1,193 +1,194 @@
 from random import randint
 
 class Jogo:
-    # Multiplayer
-    players   = []   # Players
-    modo      = 1    # Solo ou Multiplayer
-    nome      = None # Nome da pessoa
-    chute     = 0    # Chute
-    nivel     = 0    # Nivel escolhido
-    tentativa = 0    # Total de tentativas restantes
-    numero    = 0    # Numero secreto
-    pontuacao = 100  # Pontuação
-    posicao   = 0    # Posicao no ranking
-    tentivas  = 0    # Total de tentativas por nivel
+	# Multiplayer
+	continua         = True
+	players          = []          # Players
+	chute            = 0           # Chute
+	tentativas       = [0,0]       # Total de tentativas restantes
+	nivel_tentativas = 0           # Total de tentativas por nivel
+	pontuacao        = [100, 100]  # Pontuação
+	posicao          = [0, 0]      # Posicao no ranking
 
-    def __init__(self):
-        pass
-        '''# Suporta -> Multiplayer
-        self.modo = int(input('(1) Solo\n(2) Multiplayer\n'))
+	jogando          = 0           # Player que está jogando agora #1
+	nivel            = 0           # Nivel escolhido
+	numero           = 0           # Numero secreto
+	opcao            = None        # Opção - Final do jogo
 
-        if self.modo == 1:
-            solo = input('Digite seu nome: ')
+	# Começo
+	def start(self):
+		recordista = self.verifica_recordistas()
 
-            self.players.append(solo)
-        else:
-            solo = input('Digite seu nome #1: ')
-            duo  = input('Digite seu nome #2: ')
+		print('***************************************')
+		print('*** ADS 2018.1 - IFPI Campus Picos ****')
+		print('************ Aluno: Lucas *************')
 
-            self.players.append([solo, duo])
+		if recordista:
+			print('* Recorde de pontos atual: %s pontos *' % recordista[0][2])
 
-        print(self.players)'''
+		print('***************************************')
 
-    # Começo
-    def init(self):
-        recordista = self.verifica_recordistas()
+		solo = input('Digite seu nome #1: ')
+		duo  = input('Digite seu nome #2: ')
 
-        print('***************************************')
-        print('*** ADS 2018.1 - IFPI Campus Picos ****')
-        print('************ Aluno: Lucas *************')
+		self.players.append(solo)
+		self.players.append(duo)
 
-        if recordista:
-            print('* Recorde de pontos atual: %s pontos *' % recordista[0][2])
-
-        print('***************************************')
-        self.nome = input('Qual é o seu nome?\n')
-        self.nivel = int(input('''
+		self.nivel = int(input('''
 Qual seu nível de dificuldade?
 (1) Fácil
 (2) Médio
 (3) Difícil
-Informe o nîvel: '''))
+Informe o nível: '''))
 
-        self.filtro_nivel()
+		self.filtro_nivel()
 
-        self.numero = randint(1,100)
-        self.chute  = int(input('Qual é o seu chute? (%s): ' % self.numero))
+		self.numero = randint(1,100)
 
-    # Recordistas
-    # @return 0 -> posicao
-    # @return 1 -> nome
-    # @return 2 -> pontuacao
-    def verifica_recordistas(self):
-        # Comeca com a pontuacao anterior
-        with open('recordistas.txt', 'r') as recordistas:
-            recordistas = recordistas.read()
-            recordistas = recordistas.splitlines()
+		self.chute  = int(input('%s, qual é o seu chute? (%s): ' % (self.players[self.jogando], self.numero) ))
 
-        # Existe algum recordista?
-        if recordistas:
-            lista = []
-            for i in range(len(recordistas)):
-                lista.append(recordistas[i].split('='))
+	# Alterna chutes
+	def alterna_chutes(self):
+		if self.jogando == 0: # Jogador #1
+			self.jogando = 1 # Jogador #2
+		else:
+			self.jogando = 0
 
-            posicao = 0
-            retorno = []
-            for x in range(len(lista)):
-                posicao  += 1
-                retorno.append([posicao, str(lista[x][0]), int(lista[x][1])])
-            return retorno
+		self.chute  = int(input('%s, qual é o seu chute? (%s): ' % (self.players[self.jogando], self.numero) ))
 
-    # Filtrar nivel
-    def filtro_nivel(self):
-        if self.nivel == 1: # Facil
-            self.tentativa  = 10
-            self.tentativas = 10
-        elif self.nivel == 2: # Medio
-            self.tentativa  = 5
-            self.tentativas = 5
-        elif self.nivel == 3: # Dificil
-            self.tentativa  = 4
-            self.tentativas = 4
+	# Filtro Nivel
+	# Define o número de tentativas de cada usuário
+	def filtro_nivel(self):
+		if self.nivel == 1: # Facil
+			self.tentativas[0] = 10    # Cada usuário possui x tentativas
+			self.tentativas[1] = 10    # Cada usuário possui x tentativas
+			self.nivel_tentativas = 10 # Enquanto cada usuário perde, criamos uma variavel para guardar o total de tentativas por nivel
 
-    # Adiciona no ranking
-    def adiciona_ranking(self):
-        arquivo = open('recordistas.txt', mode = 'w+')
-        arquivo.write('%s=%s' % (self.nome, self.pontuacao))
+		elif self.nivel == 2: # Medio
+			self.tentativas[0]    = 5  # Cada usuário possui x tentativas
+			self.tentativas[1]    = 5  # Cada usuário possui x tentativas
+			self.nivel_tentativas = 5  # Enquanto cada usuário perde, criamos uma variavel para guardar o total de tentativas por nivel
 
-    def retira_tentativa(self):
-        if self.nivel == 1: # Facil
-            self.tentativa -= 1
-            self.pontuacao -= 10
-        elif self.nivel == 2: # Medio
-            self.tentativa -= 1
-            self.pontuacao -= 20
-        elif self.nivel == 3: # Dificil
-            self.tentativa -= 1
-            self.pontuacao -= 25
+		elif self.nivel == 3: # Dificil
+			self.tentativas[0]    = 4  # Cada usuário possui x tentativas
+			self.tentativas[1]    = 4  # Cada usuário possui x tentativas
+			self.nivel_tentativas = 4  # Enquanto cada usuário perde, criamos uma variavel para guardar o total de tentativas por nivel
 
-jogo = Jogo()
+	# Retira Tentativa
+	# Remove tentativas de cada usuário
+	def retira_tentativa(self):
+		# Todos perdem 1 tentativas quando erra o número secreto
+		self.tentativas[self.jogando] -= 1  # Remove tentativas do usuario[x]
 
-jogo.init()
+		if self.nivel == 1: # Facil
+			self.pontuacao[self.jogando]  -= 10 # Remove pontuação do usuario[x]
+		elif self.nivel == 2: # Medio
+			self.pontuacao[self.jogando]  -= 20 # Remove pontuação do usuario[x]
+		elif self.nivel == 3: # Dificil
+			self.pontuacao[self.jogando]  -= 25 # Remove pontuação do usuario[x]
 
-opcao = None
+	# Recordistas
+	# @return 0 -> posicao
+	# @return 1 -> nome
+	# @return 2 -> pontuacao
+	def verifica_recordistas(self):
+		# Comeca com a pontuacao anterior
+		with open('recordistas.txt', 'r') as recordistas:
+			recordistas = recordistas.read()
+			recordistas = recordistas.splitlines()
 
-while True:
-    # Se o usuario tiver ainda tentativas -> Continua
-    # Caso nao tenha mais nenhuma tentativa -> Mensagem com opcao de Sair ou Recomeçar o jogo
-    if jogo.tentativa > 0:
-        # Se o chute for maior do que 0 -> Continua
-        # Caso seja menor que 0 -> Considerar como numero negativo -> Nao passarao
-        if jogo.chute >= 0:
-            # Se eu acertei o numero secreto -> Mensagem dizendo que eu acertei ne papai
-            if jogo.chute == jogo.numero:
-                #print('%s seu chute foi %s' % (jogo.nome, jogo.chute)) # Mensagem
+		# Existe algum recordista?
+		if recordistas:
+			lista = []
+			for i in range(len(recordistas)):
+				lista.append(recordistas[i].split('='))
 
-                acerto = (jogo.tentativas - jogo.tentativa)
+			posicao = 0
+			retorno = []
+			for x in range(len(lista)):
+				posicao  += 1
+				retorno.append([posicao, str(lista[x][0]), int(lista[x][1])])
+			return retorno
 
-                jogo.adiciona_ranking()
+	# Adiciona Ranking
+	# Adiciona o usuário no ranking de recordistas
+	def adiciona_ranking(self):
+		arquivo = open('recordistas.txt', mode = 'w+')
+		arquivo.write('%s=%s' % (self.players[self.jogando], self.pontuacao[self.jogando]))
 
-                print('Parabéns %s! Você acertou em %s tentativas' % (jogo.nome, acerto))
+	def end(self):
+		print('***********************************************************')
+		print('RANKING DE PONTOS')
+		print('***********************************************************')
 
-                # Mostra que o usuario é um recordista
-                recordistas = jogo.verifica_recordistas()
-                # Existe algum recordista?
-                if recordistas and recordistas[0][1] == jogo.nome:
-                    print('Você é o novo recordista de pontos com %s pontos.' % (recordistas[0][2]))
-                else:
-                    for x in range(len(recordistas)):
-                        if recordistas[x][1] == jogo.nome:
-                            print('Sua pontuação foi %d ficando abaixo do recorde atual que é de %d pontos' % (recordistas[x][2], recordistas[0][2]))
+		for x in range(len(self.verifica_recordistas())):
+			print('%sº - %s pontos' % (self.verifica_recordistas()[x][0], self.verifica_recordistas()[x][2]))
 
-                # Mensagem final do jogo -> Sair ou Jogar novamente
-                opcao = int(input('''************************************************
+		self.opcao = int(input('''************************************************
 (0) - Sair
 (1) - Jogar novamente
 ************************************************
 '''))
+		# Jogar novamente
+		if self.opcao == 1:
+			self.opcao = None
+			self.start()
+		else: # Sair
+			self.continua = False
 
-                # Jogar novamente
-                if opcao == 1:
-                    opcao = None
-                    jogo.init()
-                else: # Sair
-                    break
 
-            # Mostra mensagem -> chute X é maior que o numero secreto
-            elif jogo.chute > jogo.numero:
-                print('%s seu chute foi %s' % (jogo.nome, jogo.chute))
+jogo = Jogo()
 
-                jogo.retira_tentativa()
+jogo.start()
 
-                print('** %s você errou!, seu chute foi maior que o número secreto **' % jogo.nome)
+opcao = None
 
-                print('# Tentativa: %s' % jogo.tentativa)
-                jogo.chute = int(input('Qual é o seu chute? (%s): ' % jogo.numero))
+while jogo.continua:
+	# Fim do jogo
+	if jogo.tentativas[0] == 0 and jogo.tentativas[1] == 0:
+		jogo.end()
+	else:
+		# Se o chute for maior do que 0 -> Continua
+		# Caso seja menor que 0 -> Considerar como numero negativo -> Nao passarao
+		if jogo.chute >= 0:
+			# Se eu acertei o numero secreto -> Mensagem dizendo que eu acertei ne papai
+			if jogo.chute == jogo.numero:
+				acerto = (jogo.tentativas[jogo.jogando] - jogo.nivel_tentativas)
 
-            # Se o chute que eu dei for menor que o numero secreto -> mensagem
-            elif jogo.chute < jogo.numero:
-                print('%s seu chute foi %s' % (jogo.nome, jogo.chute))
+				jogo.adiciona_ranking()
 
-                print('%s você errou!, seu chute foi menor que o número secreto' % jogo.nome)
+				print('***********************************************************')
+				print('Parabéns %s! Você acertou em %s tentativas.' % (jogo.players[jogo.jogando], acerto))
 
-                jogo.retira_tentativa()
+				# Mostra que o usuario é um recordista
+				recordistas = jogo.verifica_recordistas()
+				# Existe algum recordista?
+				if recordistas and recordistas[0][1] == jogo.players[jogo.jogando]:
+					print('Você é o novo recordista de pontos com %s pontos.' % (recordistas[0][2]))
+				else:
+					for x in range(len(recordistas)):
+						if recordistas[x][1] == jogo.players[jogo.jogando]:
+							print('Sua pontuação foi %d ficando abaixo do recorde atual que é de %d pontos' % (recordistas[x][2], recordistas[0][2]))
 
-                print('Tentativa %s' % jogo.tentativa)
-                jogo.chute = int(input('Qual é o seu chute? %s \n' % jogo.numero))
+				jogo.end()
 
-        else: # Caso o usuario digite um numero negativo
-            print('%s seu chute foi %s' % (jogo.nome, jogo.chute))
-            print("%s você não pode chutar números negativos." % jogo.nome)
-            jogo.chute = int(input('Qual é o seu chute? %s \n' % jogo.numero))
+			# Mostra mensagem -> chute X é maior que o numero secreto
+			if jogo.chute > jogo.numero:
+				print('%s seu chute foi %s' % (jogo.players[jogo.jogando], jogo.chute))
+				print('** %s você errou!, seu chute foi maior que o número secreto **' % jogo.players[jogo.jogando])
+				jogo.retira_tentativa()
+				print('# Tentativa: %s' % jogo.tentativas[jogo.jogando])
+				jogo.alterna_chutes()
 
-    else: # Caso o usuario nao tenha mais tentativas
-        print("***********************************************************")
-        opcao = int(input("0 - Sair \n1 - Jogar novamente\n"))
-        print("***********************************************************")
+			# Se o chute que eu dei for menor que o numero secreto -> mensagem
+			elif jogo.chute < jogo.numero:
+				print('%s seu chute foi %s' % (jogo.players[jogo.jogando], jogo.chute))
+				print('%s você errou!, seu chute foi menor que o número secreto' % jogo.players[jogo.jogando])
+				jogo.retira_tentativa()
+				print('# Tentativa: %s' % jogo.tentativas[jogo.jogando])
+				jogo.alterna_chutes()
 
-        # Jogar novamente
-        if opcao == 1:
-            opcao = None
-            jogo.init()
-        else: # Sair
-            break
+		else: # Caso o usuario digite um numero negativo
+			print('%s seu chute foi %s' % (jogo.players[jogo.jogando], jogo.chute))
+			print("%s você não pode chutar números negativos." % jogo.players[jogo.jogando])
+			jogo.chute = int(input('%s, qual é o seu chute? (%s): ' % (jogo.players[jogo.jogando], jogo.numero) ))
